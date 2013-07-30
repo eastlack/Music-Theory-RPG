@@ -2,13 +2,8 @@ import sys, pygame, random
 from unit import PlayerChar, Enemy
 from pygame.locals import *
 
-def printBattleDisplay(DISPLAYSURF, keys, actionArrow, actions, innerPanel):
-	# display action selection box
-	pygame.draw.line(DISPLAYSURF, (0, 0, 0), (0, MENUTOP), (SCREENX, MENUTOP), 3)						# top horizontal line
-	pygame.draw.line(DISPLAYSURF, (0, 0, 0), (SCREENX / 2, MENUTOP), (SCREENX / 2, SCREENY), 3)				# center vertical line
-	pygame.draw.line(DISPLAYSURF, (0, 0, 0), (SCREENX * .75, MENUTOP), (SCREENX * .75, SCREENY), 2)				# rightmost vertical line
-	pygame.draw.line(DISPLAYSURF, (0, 0, 0), (SCREENX / 2, (MENUTOP + SCREENY) / 2), (SCREENX, (MENUTOP + SCREENY) / 2), 2)	# middle horizontal line
-
+# print menu options and arrows in battle
+def printBattleMenu(DISPLAYSURF, keys, actionArrow, actions, allyTurn, innerPanel):
 	# print possible actions
 	font = pygame.font.SysFont("timesNewRoman", 25)
 	action0Surface = font.render("ATTACK", True, (0, 0, 0))
@@ -27,50 +22,53 @@ def printBattleDisplay(DISPLAYSURF, keys, actionArrow, actions, innerPanel):
 	DISPLAYSURF.blit(action1Surface, action1Rect)
 	DISPLAYSURF.blit(action2Surface, action2Rect)
 	DISPLAYSURF.blit(action3Surface, action3Rect)
+	# display action selection box
+	pygame.draw.line(DISPLAYSURF, (0, 0, 0), (0, MENUTOP), (SCREENX, MENUTOP), 3)						# top horizontal line
+	pygame.draw.line(DISPLAYSURF, (0, 0, 0), (SCREENX / 2, MENUTOP), (SCREENX / 2, SCREENY), 3)				# center vertical line
+	pygame.draw.line(DISPLAYSURF, (0, 0, 0), (SCREENX * .75, MENUTOP), (SCREENX * .75, SCREENY), 2)				# rightmost vertical line
+	pygame.draw.line(DISPLAYSURF, (0, 0, 0), (SCREENX / 2, (MENUTOP + SCREENY) / 2), (SCREENX, (MENUTOP + SCREENY) / 2), 2)	# middle horizontal line	
 
-	# print move selection arrow
-	# arrow for attack/item/guard/run
-	if not innerPanel:
-		if actionArrow % 4 == 0:
-			pygame.draw.polygon(DISPLAYSURF, (252, 0, 0), ((action0Rect.left, action0Rect.centery), (action0Rect.left - 6, action0Rect.centery - 6), (action0Rect.left - 6, action0Rect.centery + 6)))
-		elif actionArrow % 4 == 1:
-			pygame.draw.polygon(DISPLAYSURF, (252, 0, 0), ((action1Rect.left, action1Rect.centery), (action1Rect.left - 6, action1Rect.centery - 6), (action1Rect.left - 6, action1Rect.centery + 6)))
-		elif actionArrow % 4 == 2:
-			pygame.draw.polygon(DISPLAYSURF, (252, 0, 0), ((action2Rect.left, action2Rect.centery), (action2Rect.left - 6, action2Rect.centery - 6), (action2Rect.left - 6, action2Rect.centery + 6)))
-		elif actionArrow % 4 == 3:
-			pygame.draw.polygon(DISPLAYSURF, (252, 0, 0), ((action3Rect.left, action3Rect.centery), (action3Rect.left - 6, action3Rect.centery - 6), (action3Rect.left - 6, action3Rect.centery + 6)))
-	# arrow for specific attacks/items and description of selected one
-	else:
-		start = 0
-		end = 69
-		height = 0
-		pygame.draw.polygon(DISPLAYSURF, (252, 0, 0), ((SCREENX / 2 + 8, 93 + 25 * actionArrow), (SCREENX / 2 + 2, 87 + 25 * actionArrow), (SCREENX / 2 + 2, 99 + 25 * actionArrow)))
-		smallerFont = pygame.font.SysFont("timesNewRoman", 20)
-
-		# print description, accounting for multiple lines
-		if len(actions[actionArrow].description) > 69:
-
-			while end < len(actions[actionArrow].description):
-				assert height < 2, "Move description is too long"
-				if end > len(actions[actionArrow].description):
-					end = len(actions[actionArrow].description)
-				else:
-					while actions[actionArrow].description[end] != ' ':
-						end -= 1
- 				descriptionSurface = smallerFont.render(actions[actionArrow].description[start:end], True, (0, 0, 0))
-				descriptionRect = descriptionSurface.get_rect()
-				descriptionRect.top = 5 + height * 20
-				descriptionRect.left = SCREENX / 2 + 5
-				DISPLAYSURF.blit(descriptionSurface, descriptionRect)
-				start = end + 1
-				end += 69
-				height += 1
-		descriptionSurface = smallerFont.render(actions[actionArrow].description[start:], True, (0, 0, 0))
-		descriptionRect = descriptionSurface.get_rect()
-		descriptionRect.top = 5 + height * 20
-		descriptionRect.left = SCREENX / 2 + 5
-		DISPLAYSURF.blit(descriptionSurface, descriptionRect)
-
+	if allyTurn:
+		# arrow for attack/item/guard/run
+		if not innerPanel:
+			if actionArrow % 4 == 0:
+				pygame.draw.polygon(DISPLAYSURF, (252, 0, 0), ((action0Rect.left, action0Rect.centery), (action0Rect.left - 6, action0Rect.centery - 6), (action0Rect.left - 6, action0Rect.centery + 6)))
+			elif actionArrow % 4 == 1:
+				pygame.draw.polygon(DISPLAYSURF, (252, 0, 0), ((action1Rect.left, action1Rect.centery), (action1Rect.left - 6, action1Rect.centery - 6), (action1Rect.left - 6, action1Rect.centery + 6)))
+			elif actionArrow % 4 == 2:
+				pygame.draw.polygon(DISPLAYSURF, (252, 0, 0), ((action2Rect.left, action2Rect.centery), (action2Rect.left - 6, action2Rect.centery - 6), (action2Rect.left - 6, action2Rect.centery + 6)))
+			elif actionArrow % 4 == 3:
+				pygame.draw.polygon(DISPLAYSURF, (252, 0, 0), ((action3Rect.left, action3Rect.centery), (action3Rect.left - 6, action3Rect.centery - 6), (action3Rect.left - 6, action3Rect.centery + 6)))
+		# arrow for specific attacks/items and description of selected one
+		else:
+			start = 0
+			end = 69
+			height = 0
+			pygame.draw.polygon(DISPLAYSURF, (252, 0, 0), ((SCREENX / 2 + 8, 93 + 25 * actionArrow), (SCREENX / 2 + 2, 87 + 25 * actionArrow), (SCREENX / 2 + 2, 99 + 25 * actionArrow)))
+			smallerFont = pygame.font.SysFont("timesNewRoman", 20)
+	
+			# print description, accounting for multiple lines
+			if len(actions[actionArrow].description) > 69:
+				while end < len(actions[actionArrow].description):
+					assert height < 2, "Move description is too long"
+					if end > len(actions[actionArrow].description):
+						end = len(actions[actionArrow].description)
+					else:
+						while actions[actionArrow].description[end] != ' ':
+							end -= 1
+	 				descriptionSurface = smallerFont.render(actions[actionArrow].description[start:end], True, (0, 0, 0))
+					descriptionRect = descriptionSurface.get_rect()
+					descriptionRect.top = 5 + height * 20
+					descriptionRect.left = SCREENX / 2 + 5
+					DISPLAYSURF.blit(descriptionSurface, descriptionRect)
+					start = end + 1
+					end += 69
+					height += 1
+			descriptionSurface = smallerFont.render(actions[actionArrow].description[start:], True, (0, 0, 0))
+			descriptionRect = descriptionSurface.get_rect()
+			descriptionRect.top = 5 + height * 20
+			descriptionRect.left = SCREENX / 2 + 5
+			DISPLAYSURF.blit(descriptionSurface, descriptionRect)
 
 
 # user input for overworld character control. Currently a placeholder.
@@ -94,6 +92,7 @@ mode = "battle"
 newMode = True
 showAttacks = False
 showItems = False
+allyTurn = True
 wanderLoop = (0, 0)
 actionArrow = 0		# indicates where action selection arrow is
 pygame.init()
@@ -101,11 +100,13 @@ DISPLAYSURF = pygame.display.set_mode((SCREENX, SCREENY))
 pygame.display.set_caption("Music Theory RPG")
 FPSclock = pygame.time.Clock()
 tallis = PlayerChar("Tallis", 1, "pianist", 20, 20, 20, "images/allyPlaceholder")
+tallis.addBasicAttack("Seconds", 10, "Play a minor or major second. Maybe it will annoy the enemy enough to make them leave you alone.")
 tallis.addBasicAttack("Night of Nights", 80, "Use time magic to slice your opponent to pieces.")
 tallis.addBasicAttack("Death Waltz", 90, "Damage and confuse your opponent with Cool&Create's hyperactive and frequently misnomered remix of ZUN's 'UN Owen Was Her?', composed for the Touhou Project Series. Has nothing to do with John Stump.")
 tallis.addBasicAttack("Senbonzakura", 100, "Summon a thousand cherry trees from the earth to crush your foe.")
 tallis.setLoc(50, 150, "right")
 enemy = Enemy(10, "Marhot", 1, "flautist", 20, 20, 20, "images/enemyPlaceholder")
+enemy.addBasicAttack("Seconds", 10, "Play a minor or major second. Maybe it will annoy the enemy enough to make them leave you alone.")
 enemy.setLoc(445, 150, "left")
 
 while True:
@@ -124,11 +125,12 @@ while True:
 			# cursor movement
 			if event.type == KEYDOWN:
 				if event.key == K_x:		# select action with x
-					if showAttacks:		# specific attack
+					if showAttacks:		# use specific attack
 						tallis.attack(tallis.basicAttacks[actionArrow], enemy)
 						showAttacks = False
 						actionArrow = 0
-					else:			# general action
+						allyTurn = False
+					else:			# select general action
 						if(actionArrow % 4 == 0):	# attack
 							actionArrow = 0
 							showAttacks = True
@@ -136,6 +138,8 @@ while True:
 							showItems = True	# currently only shows empty inventory
 						elif(actionArrow % 4 == 2):	# defend
 							tallis.status = "defend"
+							actionArrow = 0
+							allyTurn = False
 						elif(actionArrow % 4 == 3):	# run
 							showItems = False
 							mode = "overworld"
@@ -190,6 +194,7 @@ while True:
 			newMode = False
 			showAttacks = False
 			showItems = False
+			allyTurn = True
 			actionArrow = 0
 			tallis.setLoc(75, MENUTOP / 2 - 50, "right")
 			enemy.setLoc(SCREENX - 200, MENUTOP / 2 - 50, "left")
@@ -226,7 +231,10 @@ while True:
 				lineNum += 1				
 
 		tallis.showHPbar(DISPLAYSURF, SCREENY)
-		printBattleDisplay(DISPLAYSURF, keys, actionArrow, tallis.basicAttacks, showAttacks)
+		printBattleMenu(DISPLAYSURF, keys, actionArrow, tallis.basicAttacks, allyTurn, showAttacks)
+		if not allyTurn:
+			enemy.attack(enemy.basicAttacks[0], tallis)
+			allyTurn = True
 	else:
 		print "INVALID MODE DETECTED. EXPECTED 'battle' OR 'overworld', INSTEAD FOUND " + mode
 	pygame.display.update()
