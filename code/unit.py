@@ -55,8 +55,28 @@ class Unit(object):
 
 
 	# Take the given amount of damage. Use negative values for recovery.
-	def takeDamage(self, dmg):
-		print self.name + " took " + str(dmg) + " damage."
+	def takeDamage(self, dmg, DISPLAY):
+#		print self.name + " took " + str(dmg) + " damage."
+
+
+		# CURRENTLY TRYING TO MAKE THE VALUE SHOW ABOVE THE TARGET'S HEAD
+		font = pygame.font.SysFont("timesNewRoman", 25)
+		if dmg >= 0:	# red for damage
+			dmgSurface = font.render(str(dmg), True, (255, 0, 0))
+		else:		# green for healing
+			dmgSurface = font.render(str(dmg), True, (0, 255, 0))
+		dmgRect = dmgSurface.get_rect()
+		dmgRect.midbottom = (self.x + 50, self.y)
+		i = 0
+		while i < 5:
+			i += 1
+			dmgRect.bottom -= 1
+			DISPLAY.blit(dmgSurface, dmgRect)
+			pygame.display.update()
+			pygame.time.wait(100)
+		
+
+
 		self.stats["curHP"] -= dmg
 
 		# HP will never exceed maximum or be negative
@@ -69,16 +89,19 @@ class Unit(object):
 
 
 	# attack a target to deal damage
-	def attack(self, move, target):
+	# also checks for victory and awards experience accordingly
+	def attack(self, move, target, DISPLAY):
 		if move in self.basicAttacks:
-			accuracy = 1.00
+			accuracy = move.calcAccuracy()
 			attack = self.stats["melody"]
 			defense = target.stats["melody"]
 			dmg = attack * move.power * move.power * accuracy * accuracy / defense / 15
 			print self.name + " used " + move.name + " on " + target.name
-			target.takeDamage(int(dmg))
-			if isinstance(self, PlayerChar):
-				self.getExp(target)
+			if target.status == "defend":
+				dmg /= 2
+			target.takeDamage(int(dmg), DISPLAY)
+			if isinstance(self, PlayerChar) and target.status == "dead":
+				self.getExp(target, accuracy)
 		else:
 			print "ERROR: " + self.name + " used invalid move " + move + " on " + target.name
 
@@ -118,9 +141,17 @@ class Unit(object):
 
 
 class PlayerChar(Unit):
+
+	# change player status 
+	def defend(self):
+		self.status = "defend"
+		print self.name + " defended."
+
 	# gain experience and check for leveling up
-	def getExp(self, target):
-		self.totalExp += target.expVal
+	def getExp(self, target, accuracy):
+		print "Defeated enemy!"
+		print "Gained " + str(target.expVal) + " experience"
+		self.totalExp += target.expVal * accuracy
 		if self.totalExp >= self.expAtNext:
 			self.levelUp()
 

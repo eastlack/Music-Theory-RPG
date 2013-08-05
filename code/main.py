@@ -88,7 +88,7 @@ def overworldUserInput(DISPLAYSURF, keys, leader):
 SCREENX = 1275
 SCREENY = 750
 MENUTOP = SCREENY - 75
-mode = "battle"
+mode = "overworld"
 newMode = True
 showAttacks = False
 showItems = False
@@ -126,7 +126,7 @@ while True:
 			if event.type == KEYDOWN:
 				if event.key == K_x:		# select action with x
 					if showAttacks:		# use specific attack
-						tallis.attack(tallis.basicAttacks[actionArrow], enemy)
+						tallis.attack(tallis.basicAttacks[actionArrow], enemy, DISPLAYSURF)
 						showAttacks = False
 						actionArrow = 0
 						allyTurn = False
@@ -137,7 +137,7 @@ while True:
 						elif(actionArrow % 4 == 1):	# item
 							showItems = True	# currently only shows empty inventory
 						elif(actionArrow % 4 == 2):	# defend
-							tallis.status = "defend"
+							tallis.defend()
 							actionArrow = 0
 							allyTurn = False
 						elif(actionArrow % 4 == 3):	# run
@@ -176,10 +176,12 @@ while True:
 			newMode = False
 			tallis.setLoc(SCREENX / 2 - 150, SCREENY / 2 - 50, "right")
 			enemy.setLoc(SCREENX / 2 + 150, SCREENY / 2 - 50, "left")
+			pygame.mixer.music.load("music/overworldPlaceholder.wav")
+#			pygame.mixer.music.play(-1, 0.0)
 
 		# all unit movement
 		overworldUserInput(DISPLAYSURF, keys, tallis)
-		wanderLoop = enemy.wander(SCREENX, SCREENY, wanderLoop[0], wanderLoop[1])
+#		wanderLoop = enemy.wander(SCREENX, SCREENY, wanderLoop[0], wanderLoop[1])
 
 		# begin battle mode if player/enemy touch
 		if(tallis.x > enemy.x - 100 and tallis.x < enemy.x + 100 and tallis.y > enemy.y - 100 and tallis.y < enemy.y + 100):
@@ -190,6 +192,7 @@ while True:
 	elif mode == "battle":
 		# initialize battle sequence
 		if newMode:
+			enemy.stats["curHP"] = enemy.stats["maxHP"]
 			enemy.status = "normal"
 			newMode = False
 			showAttacks = False
@@ -198,12 +201,11 @@ while True:
 			actionArrow = 0
 			tallis.setLoc(75, MENUTOP / 2 - 50, "right")
 			enemy.setLoc(SCREENX - 200, MENUTOP / 2 - 50, "left")
+			pygame.mixer.music.load("music/battleThemePlaceholder.wav")
+#			pygame.mixer.music.play(-1, 0.0)
 
 		# display award exp and return to overworld upon victory
 		if enemy.status == "dead":
-			print "Defeated enemy!"
-			print "Gained " + str(enemy.expVal) + " experience"
-			tallis.getExp(enemy)
 			mode = "overworld"
 			newMode = True
 
@@ -232,9 +234,12 @@ while True:
 
 		tallis.showHPbar(DISPLAYSURF, SCREENY)
 		printBattleMenu(DISPLAYSURF, keys, actionArrow, tallis.basicAttacks, allyTurn, showAttacks)
+
+		# simple enemy AI
 		if not allyTurn:
-			enemy.attack(enemy.basicAttacks[0], tallis)
 			allyTurn = True
+			if enemy.status != "dead":
+				enemy.attack(enemy.basicAttacks[0], tallis, DISPLAYSURF)
 	else:
 		print "INVALID MODE DETECTED. EXPECTED 'battle' OR 'overworld', INSTEAD FOUND " + mode
 	pygame.display.update()

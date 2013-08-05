@@ -5,3 +5,8 @@ class BasicAttack(object):
 		self.name = name
 		self.power = power
 		self.description = description
+
+	# return accuracy modifier based on user input
+	# be sure to make it actually do that in the near future
+	def calcAccuracy(self):
+		return 1.00
