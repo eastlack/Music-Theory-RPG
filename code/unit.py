@@ -59,7 +59,7 @@ class Unit(object):
 #		print self.name + " took " + str(dmg) + " damage."
 
 
-		# CURRENTLY TRYING TO MAKE THE VALUE SHOW ABOVE THE TARGET'S HEAD
+		# CURRENTLY TRYING TO MAKE THE VALUE SHOW ABOVE THE TARGET'S HEAD AND DRIFT UPWARDS
 		font = pygame.font.SysFont("timesNewRoman", 25)
 		if dmg >= 0:	# red for damage
 			dmgSurface = font.render(str(dmg), True, (255, 0, 0))
@@ -71,6 +71,7 @@ class Unit(object):
 		while i < 5:
 			i += 1
 			dmgRect.bottom -= 1
+			pygame.draw.rect(DISPLAY, (255, 255, 255), (dmgRect.left, dmgRect.top, dmgRect.right - dmgRect.left, dmgRect.bottom - dmgRect.top), 1)
 			DISPLAY.blit(dmgSurface, dmgRect)
 			pygame.display.update()
 			pygame.time.wait(100)
@@ -90,9 +91,8 @@ class Unit(object):
 
 	# attack a target to deal damage
 	# also checks for victory and awards experience accordingly
-	def attack(self, move, target, DISPLAY):
+	def attack(self, move, accuracy, target, DISPLAY):
 		if move in self.basicAttacks:
-			accuracy = move.calcAccuracy()
 			attack = self.stats["melody"]
 			defense = target.stats["melody"]
 			dmg = attack * move.power * move.power * accuracy * accuracy / defense / 15

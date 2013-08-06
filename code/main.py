@@ -88,6 +88,7 @@ def overworldUserInput(DISPLAYSURF, keys, leader):
 SCREENX = 1275
 SCREENY = 750
 MENUTOP = SCREENY - 75
+
 mode = "overworld"
 newMode = True
 showAttacks = False
@@ -95,16 +96,20 @@ showItems = False
 allyTurn = True
 wanderLoop = (0, 0)
 actionArrow = 0		# indicates where action selection arrow is
+accuracy = 0.0
+
 pygame.init()
 DISPLAYSURF = pygame.display.set_mode((SCREENX, SCREENY))
 pygame.display.set_caption("Music Theory RPG")
 FPSclock = pygame.time.Clock()
+
 tallis = PlayerChar("Tallis", 1, "pianist", 20, 20, 20, "images/allyPlaceholder")
 tallis.addBasicAttack("Seconds", 10, "Play a minor or major second. Maybe it will annoy the enemy enough to make them leave you alone.")
 tallis.addBasicAttack("Night of Nights", 80, "Use time magic to slice your opponent to pieces.")
 tallis.addBasicAttack("Death Waltz", 90, "Damage and confuse your opponent with Cool&Create's hyperactive and frequently misnomered remix of ZUN's 'UN Owen Was Her?', composed for the Touhou Project Series. Has nothing to do with John Stump.")
 tallis.addBasicAttack("Senbonzakura", 100, "Summon a thousand cherry trees from the earth to crush your foe.")
 tallis.setLoc(50, 150, "right")
+
 enemy = Enemy(10, "Marhot", 1, "flautist", 20, 20, 20, "images/enemyPlaceholder")
 enemy.addBasicAttack("Seconds", 10, "Play a minor or major second. Maybe it will annoy the enemy enough to make them leave you alone.")
 enemy.setLoc(445, 150, "left")
@@ -126,7 +131,8 @@ while True:
 			if event.type == KEYDOWN:
 				if event.key == K_x:		# select action with x
 					if showAttacks:		# use specific attack
-						tallis.attack(tallis.basicAttacks[actionArrow], enemy, DISPLAYSURF)
+						accuracy = tallis.basicAttacks[actionArrow].calcAccuracy()
+						tallis.attack(tallis.basicAttacks[actionArrow], accuracy, enemy, DISPLAYSURF)
 						showAttacks = False
 						actionArrow = 0
 						allyTurn = False
@@ -177,11 +183,11 @@ while True:
 			tallis.setLoc(SCREENX / 2 - 150, SCREENY / 2 - 50, "right")
 			enemy.setLoc(SCREENX / 2 + 150, SCREENY / 2 - 50, "left")
 			pygame.mixer.music.load("music/overworldPlaceholder.wav")
-#			pygame.mixer.music.play(-1, 0.0)
+#PUT IT BACK			pygame.mixer.music.play(-1, 0.0)
 
 		# all unit movement
 		overworldUserInput(DISPLAYSURF, keys, tallis)
-#		wanderLoop = enemy.wander(SCREENX, SCREENY, wanderLoop[0], wanderLoop[1])
+#PUT IT BACK		wanderLoop = enemy.wander(SCREENX, SCREENY, wanderLoop[0], wanderLoop[1])
 
 		# begin battle mode if player/enemy touch
 		if(tallis.x > enemy.x - 100 and tallis.x < enemy.x + 100 and tallis.y > enemy.y - 100 and tallis.y < enemy.y + 100):
@@ -202,7 +208,7 @@ while True:
 			tallis.setLoc(75, MENUTOP / 2 - 50, "right")
 			enemy.setLoc(SCREENX - 200, MENUTOP / 2 - 50, "left")
 			pygame.mixer.music.load("music/battleThemePlaceholder.wav")
-#			pygame.mixer.music.play(-1, 0.0)
+#PUT IT BACK			pygame.mixer.music.play(-1, 0.0)
 
 		# display award exp and return to overworld upon victory
 		if enemy.status == "dead":
@@ -239,7 +245,8 @@ while True:
 		if not allyTurn:
 			allyTurn = True
 			if enemy.status != "dead":
-				enemy.attack(enemy.basicAttacks[0], tallis, DISPLAYSURF)
+				accuracy = (random.random() + random.random()) / 2	# may need to modify
+				enemy.attack(enemy.basicAttacks[0], accuracy, tallis, DISPLAYSURF)
 	else:
 		print "INVALID MODE DETECTED. EXPECTED 'battle' OR 'overworld', INSTEAD FOUND " + mode
 	pygame.display.update()
