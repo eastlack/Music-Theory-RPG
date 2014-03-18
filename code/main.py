@@ -117,8 +117,8 @@ enemy.setLoc(445, 150, "left")
 while True:
 	DISPLAYSURF.fill((255, 255, 255))	# white background
 	keys = pygame.key.get_pressed()		# all currently pressed keys
-	tallis.draw(DISPLAYSURF)		# draw protagonist
-	enemy.draw(DISPLAYSURF)			# draw enemy
+	tallis.draw(DISPLAYSURF)			# draw protagonist
+	enemy.draw(DISPLAYSURF)				# draw enemy
 
 	# all user input unaffected by holding down keys goes here
 	for event in pygame.event.get():
@@ -129,7 +129,7 @@ while True:
 		if mode == "battle":
 			# cursor movement
 			if event.type == KEYDOWN:
-				if event.key == K_x:		# select action with x
+				if event.key == K_x:	# select action with x
 					if showAttacks:		# use specific attack
 						accuracy = tallis.basicAttacks[actionArrow].calcAccuracy()
 						tallis.attack(tallis.basicAttacks[actionArrow], accuracy, enemy, DISPLAYSURF)
@@ -183,11 +183,11 @@ while True:
 			tallis.setLoc(SCREENX / 2 - 150, SCREENY / 2 - 50, "right")
 			enemy.setLoc(SCREENX / 2 + 150, SCREENY / 2 - 50, "left")
 			pygame.mixer.music.load("music/overworldPlaceholder.wav")
-#PUT IT BACK			pygame.mixer.music.play(-1, 0.0)
+			pygame.mixer.music.play(-1, 0.0)
 
 		# all unit movement
 		overworldUserInput(DISPLAYSURF, keys, tallis)
-#PUT IT BACK		wanderLoop = enemy.wander(SCREENX, SCREENY, wanderLoop[0], wanderLoop[1])
+		wanderLoop = enemy.wander(SCREENX, SCREENY, wanderLoop[0], wanderLoop[1])
 
 		# begin battle mode if player/enemy touch
 		if(tallis.x > enemy.x - 100 and tallis.x < enemy.x + 100 and tallis.y > enemy.y - 100 and tallis.y < enemy.y + 100):
@@ -208,7 +208,7 @@ while True:
 			tallis.setLoc(75, MENUTOP / 2 - 50, "right")
 			enemy.setLoc(SCREENX - 200, MENUTOP / 2 - 50, "left")
 			pygame.mixer.music.load("music/battleThemePlaceholder.wav")
-#PUT IT BACK			pygame.mixer.music.play(-1, 0.0)
+			pygame.mixer.music.play(-1, 0.0)
 
 		# display award exp and return to overworld upon victory
 		if enemy.status == "dead":

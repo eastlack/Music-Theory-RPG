@@ -9,4 +9,4 @@ class BasicAttack(object):
 	# return accuracy modifier based on user input
 	# be sure to make it actually do that in the near future
 	def calcAccuracy(self):
-		return 1.00
+		return 1.0

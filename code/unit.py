@@ -1,4 +1,5 @@
 import sys, pygame, random
+import config
 from basicAttack import BasicAttack
 from pygame.locals import *
 
@@ -27,8 +28,11 @@ class Unit(object):
 		# drawing data
 		self.x = 0
 		self.y = 0
-		self.imgLoc = imgLoc
 		self.direction = "down"
+		self.imgLoc = imgLoc
+		tmp = pygame.image.load(self.imgLoc + '/' + self.direction + ".png")
+		self.width = tmp.get_size()[0]
+		self.height = tmp.get_size()[1]
 
 
 	# print out name, class, all stats, and all learned moves
@@ -75,8 +79,6 @@ class Unit(object):
 			DISPLAY.blit(dmgSurface, dmgRect)
 			pygame.display.update()
 			pygame.time.wait(100)
-		
-
 
 		self.stats["curHP"] -= dmg
 
@@ -101,7 +103,7 @@ class Unit(object):
 				dmg /= 2
 			target.takeDamage(int(dmg), DISPLAY)
 			if isinstance(self, PlayerChar) and target.status == "dead":
-				self.getExp(target, accuracy)
+				self.gainExp(target, accuracy)
 		else:
 			print "ERROR: " + self.name + " used invalid move " + move + " on " + target.name
 
@@ -113,11 +115,11 @@ class Unit(object):
 		self.direction = direction
 
 
-	# move in specified direction and changing image to face that direction
-	def move(self, direction, screenX, screenY):
+	# move in specified direction and change image to face that direction
+	def move(self, direction):
 		if(direction == "right"):
 			self.direction = direction
-			if self.x < screenX - 100:
+			if self.x < config.SCREENX - 100:
 				self.x += 4
 		elif(direction == "left"):
 			self.direction = direction
@@ -127,13 +129,13 @@ class Unit(object):
 			self.direction = direction
 			if self.y >= 4:
 				self.y -= 4
-		elif(direction == "down" and self.y < screenY - 100):
+		elif(direction == "down" and self.y < config.SCREENY - 100):
 			self.direction = direction
-			if self.y < screenY - 100:
+			if self.y < config.SCREENY - 100:
 				self.y += 4
 		
 
-	# draw unit on screen
+	# blit unit onto screen
 	def draw(self, screen):
 		image = pygame.image.load(self.imgLoc + '/' + self.direction + ".png")
 		screen.blit(image, (self.x, self.y))
@@ -142,13 +144,13 @@ class Unit(object):
 
 class PlayerChar(Unit):
 
-	# change player status 
+	# change player status to defend
 	def defend(self):
 		self.status = "defend"
 		print self.name + " defended."
 
 	# gain experience and check for leveling up
-	def getExp(self, target, accuracy):
+	def gainExp(self, target, accuracy):
 		print "Defeated enemy!"
 		print "Gained " + str(target.expVal) + " experience"
 		self.totalExp += target.expVal * accuracy
@@ -212,21 +214,28 @@ class PlayerChar(Unit):
 class Enemy(Unit):
 	def __init__(self, expVal, name, level, unitClass, HP, melody, rhythm, imgLoc):
 		Unit.__init__(self, name, level, unitClass, HP, melody, rhythm, imgLoc)
-		self.expVal = expVal	# maximum amount of experience gained from defeating
+		self.expVal = expVal			# maximum amount of experience gained from defeating
+		self.wanderDirection = "none"	# direction of movement
+		self.wanderTime = 0				# remaining time to move in current direction
+
 
 	# randomly move around overworld, avoiding edge of screen
-	def wander(self, screenX, screenY, loop, direction):
-		loop -= 1
-		if loop <= 0:
-			loop = random.randint(1, 30)
-			direction = random.randint(0, 5)
-		if direction == 0:
-			self.move("right", screenX, screenY)
-		elif direction == 1:
-			self.move("left", screenX, screenY)
-		elif direction == 2:
-			self.move("up", screenX, screenY)
-		elif direction == 3:
-			self.move("down", screenX, screenY)
-		return (loop, direction)
+	def wander(self):
+		# choose new direction and duration when current one expires
+		if self.wanderTime <= 0:
+			self.wanderTime = random.randint(1, 30)
+			self.wanderDirection = random.randint(0, 5)
+
+		# move according to wanderDirection
+		if self.wanderDirection == 0:
+			self.move("right")
+		elif self.wanderDirection == 1:
+			self.move("left")
+		elif self.wanderDirection == 2:
+			self.move("up")
+		elif self.wanderDirection == 3:
+			self.move("down")
+
+		self.wanderTime -= 1
+		self.draw(config.OVERWORLDSURFACE)
 
